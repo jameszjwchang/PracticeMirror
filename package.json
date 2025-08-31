@@ -1,0 +1,13 @@
+{
+  "name": "practicemirror",
+  "version": "1.0.0",
+  "description": "This is a tool to help with practicing!",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"No tests yet\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}
