@@ -1,0 +1,49 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.big-button {
+  font-size: 2rem;
+  padding: 20px 40px;
+  margin-bottom: 10px;
+}
+
+.save-button {
+  margin-bottom: 20px;
+}
+
+.hidden {
+  display: none;
+}
+
+#folders {
+  width: 100%;
+  max-width: 600px;
+}
+
+.folder {
+  border: 1px solid #ccc;
+  margin-bottom: 20px;
+  padding: 10px;
+}
+
+.folder h3 {
+  margin: 0 0 10px 0;
+}
+
+.folder ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.folder li {
+  margin-bottom: 5px;
+}
+
+.folder li button {
+  margin-left: 5px;
+}
