@@ -1,0 +1,31 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  margin: 20px;
+}
+
+#controls {
+  margin-bottom: 20px;
+}
+
+.giant {
+  font-size: 2rem;
+  padding: 20px 40px;
+}
+
+.hidden {
+  display: none;
+}
+
+#recordingsList {
+  list-style: none;
+  padding: 0;
+}
+
+#recordingsList li {
+  margin: 10px 0;
+}
+
+.recording-actions button {
+  margin-left: 5px;
+}

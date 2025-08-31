@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Practice Mirror</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Practice Mirror</h1>
+  <div id="controls">
+    <button id="mainButton" class="giant">RECORD</button>
+    <button id="saveButton" class="hidden">SAVE</button>
+  </div>
+
+  <div id="folderControls">
+    <label for="folderSelect">Folder:</label>
+    <select id="folderSelect"></select>
+    <input id="newFolderName" type="text" placeholder="New folder name" />
+    <button id="addFolder">Add Folder</button>
+  </div>
+
+  <div id="sortControls">
+    <button id="sortByName">Sort by Name</button>
+    <button id="sortByDate">Sort by Date</button>
+  </div>
+
+  <ul id="recordingsList"></ul>
+
+  <script src="app.js"></script>
+</body>
+</html>

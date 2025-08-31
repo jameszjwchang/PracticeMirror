@@ -1,0 +1,8 @@
+{
+  "name": "practice-mirror",
+  "version": "1.0.0",
+  "description": "Tool to help musicians record practice sessions",
+  "scripts": {
+    "test": "echo \"No tests specified\""
+  }
+}
