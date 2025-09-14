@@ -9,6 +9,8 @@ let state = 'idle'; // idle, recording, stopped, playing
 
 const recordButton = document.getElementById('recordButton');
 const saveButton = document.getElementById('saveButton');
+const downloadButton = document.getElementById('downloadButton');
+const recordingTimer = document.getElementById('recordingTimer');
 const folderList = document.getElementById('folderList');
 const inboxContainer = document.getElementById('inboxContainer');
 const newFolderName = document.getElementById('newFolderName');
@@ -40,6 +42,7 @@ recordButton.addEventListener('click', () => {
 });
 
 saveButton.addEventListener('click', saveRecording);
+downloadButton.addEventListener('click', downloadCurrentRecording);
 
 addFolder.addEventListener('click', () => {
   const name = newFolderName.value.trim();
@@ -62,6 +65,8 @@ async function startRecording() {
   playerContainer.classList.add('hidden');
   audio.pause();
   audio.currentTime = 0;
+  recordingTimer.classList.remove('hidden');
+  startTimer();
   const stream = await getMicStream();
   enableMic(true);
   mediaRecorder = new MediaRecorder(stream);
@@ -74,12 +79,15 @@ async function startRecording() {
     audio.src = URL.createObjectURL(currentBlob);
     playerContainer.classList.remove('hidden');
     saveButton.classList.remove('hidden');
+    downloadButton.classList.remove('hidden');
     enableMic(false);
+    stopTimer();
   };
   mediaRecorder.start();
   state = 'recording';
   recordButton.textContent = 'Stop';
   saveButton.classList.add('hidden');
+  downloadButton.classList.add('hidden');
 }
 
 function stopRecording() {
@@ -87,6 +95,7 @@ function stopRecording() {
   state = 'stopped';
   recordButton.textContent = 'Play';
   saveButton.classList.remove('hidden');
+  downloadButton.classList.remove('hidden');
 }
 
 function playRecording() {
@@ -96,6 +105,7 @@ function playRecording() {
   state = 'playing';
   recordButton.textContent = 'Stop';
   saveButton.classList.remove('hidden');
+  downloadButton.classList.remove('hidden');
 }
 
 function stopPlayback() {
@@ -111,7 +121,8 @@ async function saveRecording() {
   const name = formatDateTime(now); // Auto-name down to seconds
   const id = Date.now().toString();
   const base64 = await blobToBase64(currentBlob);
-  data.inbox.push({ id, name, data: base64, date: now.toISOString() });
+  const durationMs = lastRecordingDurationMs || 0;
+  data.inbox.push({ id, name, data: base64, date: now.toISOString(), duration: durationMs });
   saveData();
   renderInbox();
   renderFolders();
@@ -122,7 +133,10 @@ function resetState() {
   state = 'idle';
   recordButton.textContent = 'Record';
   saveButton.classList.add('hidden');
+  downloadButton.classList.add('hidden');
   currentBlob = null;
+  recordingTimer.classList.add('hidden');
+  recordingTimer.textContent = '00:00';
 }
 
 function blobToBase64(blob) {
@@ -312,7 +326,8 @@ function makeRecordingItem(rec, source) {
   });
 
   const title = document.createElement('span');
-  title.textContent = rec.name;
+  const dur = rec.duration ? ` (${formatDuration(rec.duration)})` : '';
+  title.textContent = rec.name + dur;
   li.appendChild(title);
 
   const actions = document.createElement('div');
@@ -326,6 +341,19 @@ function makeRecordingItem(rec, source) {
     audio.play();
   });
   actions.appendChild(playBtn);
+
+  const downloadBtn = document.createElement('button');
+  downloadBtn.textContent = 'Download';
+  downloadBtn.addEventListener('click', () => {
+    const a = document.createElement('a');
+    a.href = rec.data;
+    const safeName = rec.name.replace(/[^a-z0-9_-]+/gi, '_');
+    a.download = `${safeName || 'recording'}.webm`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => a.remove(), 0);
+  });
+  actions.appendChild(downloadBtn);
 
   const renameBtn = document.createElement('button');
   renameBtn.textContent = 'Rename';
@@ -432,3 +460,62 @@ function formatDateTime(d) {
   const s = pad2(d.getSeconds());
   return `${y}-${m}-${day} ${h}:${min}:${s}`;
 }
+
+// Timer logic
+let timerInterval = null;
+let recordingStartTime = null;
+let lastRecordingDurationMs = 0;
+
+function startTimer() {
+  recordingStartTime = performance.now();
+  lastRecordingDurationMs = 0;
+  updateTimer();
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(updateTimer, 200);
+}
+
+function stopTimer() {
+  if (timerInterval) clearInterval(timerInterval);
+  if (recordingStartTime) {
+    lastRecordingDurationMs = performance.now() - recordingStartTime;
+  }
+  updateTimer(true);
+  timerInterval = null;
+}
+
+function updateTimer(final = false) {
+  if (!recordingTimer) return;
+  let elapsed;
+  if (recordingStartTime) {
+    elapsed = (final ? lastRecordingDurationMs : performance.now() - recordingStartTime);
+  } else {
+    elapsed = 0;
+  }
+  recordingTimer.textContent = formatDuration(elapsed);
+}
+
+function formatDuration(ms) {
+  ms = Math.max(0, ms);
+  const totalSeconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${pad2(minutes)}:${pad2(seconds)}`;
+}
+
+function downloadCurrentRecording() {
+  if (!currentBlob) return;
+  const a = document.createElement('a');
+  const now = new Date();
+  const name = 'Recording ' + formatDateTime(now) + '.webm';
+  a.href = URL.createObjectURL(currentBlob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    URL.revokeObjectURL(a.href);
+    a.remove();
+  }, 1000);
+}
+
+// Provide a download button for saved recordings via context actions? Instead, add a button beside Play.
+// Modify makeRecordingItem to include download button
